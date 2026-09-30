@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <title>QR Code 掃描器</title>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, "Microsoft JhengHei", sans-serif;
+            background: #f5f5f5;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .result-box {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        #result {
+            min-height: 50px;
+            padding: 12px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            word-break: break-all;
+        }
+
+        button {
+            width: 100%;
+            max-width: 500px;
+            padding: 14px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #007bff;
+            color: white;
+            font-size: 16px;
+        }
+
+        button:active {
+            background: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>📷 QR Code 掃描器</h1>
+
+    <div id="reader"></div>
+
+    <div class="result-box">
+        <h3>掃描結果</h3>
+
+        <div id="result">
+            尚未掃描
+        </div>
+
+        <button onclick="copyResult()">
+            📋 複製文字
+        </button>
+
+        <button onclick="restartScanner()">
+            🔄 掃描下一個
+        </button>
+    </div>
+
+    <script>
+
+        let scanner;
+
+        function onScanSuccess(decodedText, decodedResult) {
+
+            // 顯示 QR Code 裡面的文字
+            document.getElementById("result").textContent = decodedText;
+
+            // 掃描成功後停止掃描
+            if (scanner) {
+                scanner.clear();
+            }
+        }
+
+        function onScanError(errorMessage) {
+            // 掃描過程中的錯誤通常不用顯示
+        }
+
+        function startScanner() {
+
+            scanner = new Html5Qrcode("reader");
+
+            scanner.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: {
+                        width: 250,
+                        height: 250
+                    }
+                },
+                onScanSuccess,
+                onScanError
+            ).catch(function(error) {
+
+                document.getElementById("result").textContent =
+                    "無法開啟相機：" + error;
+
+            });
+        }
+
+        function restartScanner() {
+
+            document.getElementById("result").textContent =
+                "等待掃描...";
+
+            startScanner();
+        }
+
+        function copyResult() {
+
+            const text =
+                document.getElementById("result").textContent;
+
+            if (!text || text === "尚未掃描") {
+                alert("目前沒有掃描結果");
+                return;
+            }
+
+            navigator.clipboard.writeText(text)
+                .then(function() {
+                    alert("已複製！");
+                })
+                .catch(function() {
+                    alert("複製失敗");
+                });
+        }
+
+        // 啟動掃描器
+        startScanner();
+
+    </script>
+
+</body>
+</html>
+
